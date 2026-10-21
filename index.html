@@ -254,6 +254,13 @@
   .sitefoot a,.sitefoot div.fitem{color:rgba(255,255,255,.78);font-size:13.5px;text-decoration:none;display:block;margin-top:7px}
   .sitefoot .disc{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.15);padding-top:16px;font-size:12px;color:rgba(255,255,255,.6)}
 
+  /* ---------- booking details ---------- */
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .dgroup{display:flex;flex-direction:column;gap:2px}
+  .dlabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:700}
+  .dval{font-size:14px;color:var(--ink);font-weight:500}
+  .dsection{font-family:"Fraunces",serif;font-weight:600;font-size:14px;color:var(--brass-deep);border-top:1px solid var(--line);padding-top:12px}
+
   .footnote{text-align:center;color:var(--faint);font-size:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 
   @media (max-width:560px){
@@ -479,7 +486,7 @@ function seed(){
     ],
     bookings:[
       {id:"BK-4821",roomId:"r3",guest:"Aarav Mehta",phone:"98290 11223",
-       checkIn:addDays(todayISO(),1),checkOut:addDays(todayISO(),4),amount:14400,pay:"paid",source:"MakeMyTrip",created:Date.now()-86400000},
+       checkIn:addDays(todayISO(),1),checkOut:addDays(todayISO(),4),amount:14400,pay:"paid",source:"MakeMyTrip",guests:2,method:"Card",created:Date.now()-86400000},
     ]
   };
 }
@@ -687,7 +694,7 @@ function renderGuestDash(){
       <h2 class="section-h" style="font-size:23px;margin-top:4px">${r?r.type:"Your room"}</h2>
       <div class="dash-meta"><span>Room ${r?r.num:"—"}</span><span>${fmtDate(b.checkIn)} → ${fmtDate(b.checkOut)}</span><span>${nn} night${nn>1?"s":""}</span></div>
       <div class="dash-row"><span class="pill ok">Confirmed · ${b.id}</span><span class="serif" style="font-weight:600;font-size:18px">${inr(b.amount)}</span></div>
-      <div class="dash-actions"><button class="btn sm ghost" onclick="openMyBookings()">All my trips</button><button class="btn sm ghost" onclick="guestCancel('${b.id}')">Cancel stay</button></div>
+      <div class="dash-actions"><button class="btn sm" onclick="bookingDetails('${b.id}')">View details</button><button class="btn sm ghost" onclick="openMyBookings()">All my trips</button></div>
     </div></div>`;
 }
 function openAuth(){ me ? openMyBookings() : loginScreen(); }
@@ -739,7 +746,7 @@ function openMyBookings(){
       <div style="font-size:13px;color:var(--muted)">Room ${r?r.num:"—"} · ${fmtDate(b.checkIn)} → ${fmtDate(b.checkOut)}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <span class="mono">${b.id} · ${inr(b.amount)}</span>
-        ${c?"":`<button class="linkbtn danger" onclick="guestCancel('${b.id}')">Cancel</button>`}</div>
+        <span class="rowact"><button class="linkbtn" onclick="bookingDetails('${b.id}')">Details</button>${c?"":`<button class="linkbtn danger" onclick="guestCancel('${b.id}')">Cancel</button>`}</span></div>
     </div>`;}).join("")
     : `<div class="empty" style="padding:28px">No bookings yet under this number.<br>Pick dates and reserve a room to see it here.</div>`;
   modalRoot().innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">
@@ -751,12 +758,55 @@ function openMyBookings(){
     </div></div></div>`;
 }
 function guestCancel(id){const b=DB.bookings.find(x=>x.id===id);if(!b)return;b.pay="cancelled";save(DB);renderRooms();renderGuestDash();openMyBookings();}
+function bookingDetails(id){
+  const b=DB.bookings.find(x=>x.id===id); if(!b) return;
+  const r=roomById(b.roomId), nn=nights(b.checkIn,b.checkOut), cancelled=b.pay==="cancelled";
+  modalRoot().innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">
+    <div class="sheet-head"><h3>Booking details</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+    <div class="sheet-body">
+      <div class="mini"><div class="thumb">${roomScene(r?r.tier:"deluxe")}</div>
+        <div style="min-width:0"><div class="serif" style="font-weight:600;font-size:16px">${r?r.type:"Room"}</div>
+        <div style="font-size:12.5px;color:var(--muted)">Room ${r?r.num:"—"} · up to ${r?r.capacity:""} guests</div></div>
+        <span style="margin-left:auto" class="pill ${cancelled?'neutral':'ok'}">${cancelled?'Cancelled':'Confirmed'}</span></div>
+
+      <div class="dgroup"><div class="dlabel">Booking reference</div><div class="dval mono">${b.id}</div></div>
+
+      <div class="dsection">Your stay</div>
+      <div class="dgrid">
+        <div class="dgroup"><div class="dlabel">Check-in</div><div class="dval">${fmtDate(b.checkIn)} · 2:00 PM</div></div>
+        <div class="dgroup"><div class="dlabel">Check-out</div><div class="dval">${fmtDate(b.checkOut)} · 11:00 AM</div></div>
+        <div class="dgroup"><div class="dlabel">Nights</div><div class="dval">${nn}</div></div>
+        <div class="dgroup"><div class="dlabel">Guests</div><div class="dval">${b.guests||"—"}</div></div>
+      </div>
+
+      <div class="dsection">Guest</div>
+      <div class="dgrid">
+        <div class="dgroup"><div class="dlabel">Name</div><div class="dval">${b.guest||"—"}</div></div>
+        <div class="dgroup"><div class="dlabel">Phone</div><div class="dval">${b.phone||"—"}</div></div>
+        <div class="dgroup" style="grid-column:1/-1"><div class="dlabel">Email</div><div class="dval">${b.email||"—"}</div></div>
+      </div>
+
+      <div class="dsection">Payment</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="sumrow"><span>Method</span><span>${b.method||"Online"}</span></div>
+        <div class="sumrow"><span>Booked via</span><span>${b.source||"Direct"}</span></div>
+        <div class="sumrow total"><span>Total paid</span><span>${inr(b.amount)}</span></div>
+      </div>
+
+      <div style="font-size:12px;color:var(--faint)">The Peacock · 14 Civil Lines, Jaipur 302006 · +91 141 000 0000</div>
+      <div style="display:flex;gap:8px">
+        ${cancelled?"":`<button class="btn ghost" style="flex:1" onclick="guestCancel('${b.id}')">Cancel stay</button>`}
+        <button class="btn" style="flex:1" onclick="closeModal()">Close</button>
+      </div>
+    </div></div></div>`;
+}
 function signOut(){me=null;try{localStorage.removeItem(ME_KEY);}catch(e){}renderAuth();closeModal();}
 
 function startBooking(roomId){
   const ci=document.getElementById("ci").value,co=document.getElementById("co").value;
   const r=roomById(roomId),n=nights(ci,co);
-  flow={roomId,ci,co,n,amount:r.price*n};
+  const guests=(document.getElementById("guests")||{}).value||"2";
+  flow={roomId,ci,co,n,amount:r.price*n,guests};
   stepDetails();
 }
 function miniCard(r){return `<div class="mini"><div class="thumb">${roomScene(r.tier)}</div>
@@ -797,9 +847,9 @@ function stepPayment(){
       <div class="payamt">${inr(flow.amount)}</div>
       <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:-8px">The Peacock, Jaipur · Room ${r.num}</div>
       <div class="paymethods">
-        <label class="paym"><input type="radio" name="pm" checked> UPI — GPay / PhonePe / Paytm</label>
-        <label class="paym"><input type="radio" name="pm"> Credit / Debit card</label>
-        <label class="paym"><input type="radio" name="pm"> Netbanking</label>
+        <label class="paym"><input type="radio" name="pm" value="UPI" checked> UPI — GPay / PhonePe / Paytm</label>
+        <label class="paym"><input type="radio" name="pm" value="Card"> Credit / Debit card</label>
+        <label class="paym"><input type="radio" name="pm" value="Netbanking"> Netbanking</label>
       </div>
       <div style="font-size:11.5px;color:var(--faint);text-align:center">No real money is charged — this simulates a Razorpay checkout.</div>
       <button class="btn brass" id="paybtn" onclick="payNow()">Pay ${inr(flow.amount)}</button>
@@ -807,12 +857,13 @@ function stepPayment(){
 }
 function payNow(){
   const btn=document.getElementById("paybtn");
+  const method=(document.querySelector('input[name=pm]:checked')||{}).value||"UPI";
   btn.disabled=true;btn.textContent="Verifying payment…";
   btn.insertAdjacentHTML("afterend",'<div class="spinner"></div>');
   setTimeout(()=>{
     if(isBooked(flow.roomId,flow.ci,flow.co)){closeModal();alert("Sorry — that room was just taken for these dates.");renderRooms();return;}
     const ref="BK-"+Math.floor(1000+Math.random()*9000);
-    DB.bookings.push({id:ref,roomId:flow.roomId,guest:flow.name,phone:flow.phone,email:flow.email,
+    DB.bookings.push({id:ref,roomId:flow.roomId,guest:flow.name,phone:flow.phone,email:flow.email,guests:flow.guests,method,
       checkIn:flow.ci,checkOut:flow.co,amount:flow.amount,pay:"paid",source:"Direct",created:Date.now()});
     save(DB);flow.ref=ref;stepDone();renderRooms();renderGuestDash();
   },1400);
