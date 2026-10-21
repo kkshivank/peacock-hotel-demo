@@ -470,7 +470,7 @@
 "use strict";
 
 /* ---------------- storage ---------------- */
-const KEY = "peacock_v3";
+const KEY = "peacock_v4";
 const todayISO = () => new Date().toISOString().slice(0,10);
 const addDays = (iso,n)=>{const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
 
@@ -485,8 +485,20 @@ function seed(){
       {id:"r6",num:"302",type:"Maharaja Suite",tier:"suite",capacity:4,price:9500,status:"ready"},
     ],
     bookings:[
-      {id:"BK-4821",roomId:"r3",guest:"Aarav Mehta",phone:"98290 11223",
-       checkIn:addDays(todayISO(),1),checkOut:addDays(todayISO(),4),amount:14400,pay:"paid",source:"MakeMyTrip",guests:2,method:"Card",created:Date.now()-86400000},
+      {id:"BK-4821",roomId:"r3",guest:"Aarav Mehta",phone:"98290 11223",email:"aarav.m@email.com",
+       checkIn:addDays(todayISO(),1),checkOut:addDays(todayISO(),4),amount:14400,pay:"paid",source:"MakeMyTrip",guests:2,method:"Card",created:Date.now()-1*86400000},
+      {id:"BK-4890",roomId:"r1",guest:"Sneha Kulkarni",phone:"99820 44517",email:"sneha.k@email.com",
+       checkIn:addDays(todayISO(),2),checkOut:addDays(todayISO(),5),amount:9600,pay:"paid",source:"MakeMyTrip",guests:2,method:"UPI",created:Date.now()-2*86400000},
+      {id:"BK-4912",roomId:"r5",guest:"Ritika Agarwal",phone:"90017 33280",email:"ritika.a@email.com",
+       checkIn:addDays(todayISO(),5),checkOut:addDays(todayISO(),7),amount:19000,pay:"paid",source:"MakeMyTrip",guests:4,method:"Card",created:Date.now()-3*86400000},
+      {id:"BK-4866",roomId:"r6",guest:"Kavya Reddy",phone:"73049 55120",email:"kavya.r@email.com",
+       checkIn:addDays(todayISO(),3),checkOut:addDays(todayISO(),6),amount:28500,pay:"paid",source:"MakeMyTrip",guests:3,method:"Netbanking",created:Date.now()-4*86400000},
+      {id:"BK-4777",roomId:"r2",guest:"Daniel Fischer",phone:"98100 77654",email:"d.fischer@email.com",
+       checkIn:addDays(todayISO(),1),checkOut:addDays(todayISO(),3),amount:6400,pay:"paid",source:"Booking.com",guests:2,method:"Card",created:Date.now()-5*86400000},
+      {id:"BK-4805",roomId:"r1",guest:"Mohit Verma",phone:"94140 22009",email:"mohit.v@email.com",
+       checkIn:addDays(todayISO(),-3),checkOut:addDays(todayISO(),-1),amount:6400,pay:"paid",source:"Goibibo",guests:2,method:"UPI",created:Date.now()-7*86400000},
+      {id:"BK-4702",roomId:"r3",guest:"Priya Sharma",phone:"90011 22334",email:"priya.s@email.com",
+       checkIn:addDays(todayISO(),-5),checkOut:addDays(todayISO(),-3),amount:9600,pay:"paid",source:"MakeMyTrip",guests:2,method:"UPI",created:Date.now()-9*86400000},
     ]
   };
 }
