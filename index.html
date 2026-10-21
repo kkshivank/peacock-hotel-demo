@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Peacock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  /* Identity: a boutique Jaipur hotel. Deep heritage teal for atmosphere, brass as the
+     one accent, ivory surfaces. Fraunces (serif display) carries the hotel's voice;
+     Figtree keeps the booking UI clean. Semantic green/rust stay separate from brass.
+     Layout: a hero with a floating search card, then room cards; admin is a quiet back-office. */
+  :root{
+    --bg:#F3EFE7; --surface:#FFFFFF; --surface-2:#F8F5EE;
+    --ink:#201D18; --muted:#6E685E; --faint:#A39B8C;
+    --line:#E7E0D3; --line-strong:#D8CFBD;
+    --teal:#0E4A43; --teal-deep:#0A3B35; --teal-ink:#E8F0ED;
+    --brass:#B08642; --brass-deep:#946E31; --brass-soft:#F1E7D4;
+    --ok:#2F7A52; --ok-soft:#E4EFE7;
+    --busy:#B2502C; --busy-soft:#F6E6DD;
+    --shadow:0 1px 2px rgba(32,29,24,.05),0 10px 30px rgba(32,29,24,.07);
+    --shadow-lg:0 24px 60px rgba(32,29,24,.18);
+    --radius:16px; --radius-sm:10px;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#16140F; --surface:#201D17; --surface-2:#272319;
+    --ink:#EDE8DD; --muted:#A79F8F; --faint:#746D5E;
+    --line:#2F2A20; --line-strong:#3D3729;
+    --teal:#126056; --teal-deep:#0C463F; --teal-ink:#DCEAE6;
+    --brass:#CBA061; --brass-deep:#B08642; --brass-soft:#2C2416;
+    --ok:#62B184; --ok-soft:#1E2A22;
+    --busy:#DB7E54; --busy-soft:#2E2016;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.4);
+    --shadow-lg:0 24px 60px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#16140F; --surface:#201D17; --surface-2:#272319;
+    --ink:#EDE8DD; --muted:#A79F8F; --faint:#746D5E;
+    --line:#2F2A20; --line-strong:#3D3729;
+    --teal:#126056; --teal-deep:#0C463F; --teal-ink:#DCEAE6;
+    --brass:#CBA061; --brass-deep:#B08642; --brass-soft:#2C2416;
+    --ok:#62B184; --ok-soft:#1E2A22;
+    --busy:#DB7E54; --busy-soft:#2E2016;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.4);
+    --shadow-lg:0 24px 60px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{margin:0;font-family:"Fraunces",Georgia,serif;text-wrap:balance;letter-spacing:-.01em;font-weight:600}
+  button{font-family:inherit;cursor:pointer}
+  input,select{font-family:inherit}
+  .tnum{font-variant-numeric:tabular-nums}
+  .serif{font-family:"Fraunces",Georgia,serif}
+
+  /* ---------- top bar ---------- */
+  .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-block:11px;
+    padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:31}
+  .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+  .crest{width:34px;height:34px;flex:none}
+  .brand b{font-family:"Fraunces",serif;font-weight:600;font-size:19px;letter-spacing:-.01em;line-height:1}
+  .brand span{font-size:10px;color:var(--brass-deep);letter-spacing:.22em;text-transform:uppercase;font-weight:600}
+  .roleswitch{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .roleswitch button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:7px 15px;border-radius:999px}
+  .roleswitch button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+  .iconbtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:9px;width:36px;height:36px;display:grid;place-items:center;font-size:15px}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(160deg,var(--teal) 0%,var(--teal-deep) 100%);color:var(--teal-ink)}
+  .hero .arches{position:absolute;inset:0;opacity:.09;pointer-events:none}
+  .hero-inner{position:relative;max-width:1120px;margin:0 auto;
+    padding-block:46px 120px;
+    padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+  .stars{color:var(--brass);letter-spacing:3px;font-size:14px}
+  .hero h1{font-size:clamp(34px,6vw,56px);color:#fff;font-weight:500;line-height:1.02;margin:10px 0 0}
+  .hero .loc{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:rgba(255,255,255,.8);margin-top:14px;letter-spacing:.02em}
+  .hero .tagline{font-family:"Fraunces",serif;font-style:italic;font-size:clamp(16px,2.4vw,20px);color:rgba(255,255,255,.82);margin-top:16px;max-width:30ch}
+  .trust{display:flex;gap:20px;flex-wrap:wrap;margin-top:24px;font-size:13px;color:rgba(255,255,255,.72)}
+  .trust b{color:#fff;font-family:"Fraunces",serif;font-weight:600}
+
+  /* floating search card */
+  .searchwrap{max-width:1120px;margin:-86px auto 0;position:relative;z-index:5;
+    padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+  .searchcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+    padding:20px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+  .searchcard .field{flex:1;min-width:150px}
+  .searchcard .nights{font-size:13px;color:var(--muted);padding-bottom:11px;white-space:nowrap}
+  .searchcard .nights b{color:var(--ink);font-family:"Fraunces",serif;font-weight:600}
+
+  /* ---------- generic ---------- */
+  .wrap{max-width:1120px;margin:0 auto;padding-block:40px 70px;
+    padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass-deep);font-weight:700}
+  .section-h{font-size:clamp(24px,4vw,30px);margin-top:6px;font-weight:500}
+  .lede{color:var(--muted);font-size:15px;margin-top:5px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .btn{border:0;border-radius:10px;padding:12px 20px;font-weight:600;font-size:14px;background:var(--teal);color:#fff;transition:filter .15s}
+  .btn:hover{filter:brightness(1.1)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+  .btn.brass{background:var(--brass);color:#fff}
+  .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong)}
+  .btn.ghost:hover{background:var(--surface-2);filter:none}
+  .btn.sm{padding:8px 15px;font-size:13px}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px}
+  .pill.ok{background:var(--ok-soft);color:var(--ok)}
+  .pill.busy{background:var(--busy-soft);color:var(--busy)}
+  .pill.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+  .field input,.field select{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+    border-radius:10px;padding:11px 13px;font-size:14px}
+  .field input:focus,.field select:focus{outline:2px solid var(--brass);outline-offset:1px;border-color:var(--brass)}
+
+  /* ---------- room cards ---------- */
+  .roomgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:26px}
+  .room{overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
+  .room:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+  .room .scene{position:relative;aspect-ratio:3/2;max-width:100%;overflow:hidden}
+  .room .scene svg{width:100%;height:100%;display:block}
+  .room .scene .overlay-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start}
+  .room .roomnum{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+    background:rgba(16,74,67,.72);backdrop-filter:blur(3px);padding:4px 9px;border-radius:999px}
+  .room .body{padding:18px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .room .rtype{font-family:"Fraunces",serif;font-weight:600;font-size:20px;line-height:1.15}
+  .amen{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+  .amen span{display:inline-flex;align-items:center;gap:5px}
+  .amen svg{width:15px;height:15px;stroke:var(--brass-deep);fill:none;stroke-width:1.6}
+  .priceline{display:flex;align-items:baseline;gap:6px}
+  .price{font-family:"Fraunces",serif;font-weight:600;font-size:23px}
+  .price small{font-weight:500;font-size:12px;color:var(--faint);font-family:"Figtree",sans-serif}
+  .room .foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:4px;border-top:1px solid var(--line)}
+  .foot .forn{font-size:12px;color:var(--faint)}
+
+  /* ---------- modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(14,20,19,.55);backdrop-filter:blur(3px);z-index:50;
+    display:grid;place-items:center;padding:16px}
+  .sheet{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:450px;max-height:92vh;overflow:auto}
+  .sheet-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .sheet-head h3{font-size:19px;font-weight:600}
+  .sheet-body{padding:22px;display:flex;flex-direction:column;gap:16px}
+  .sumrow{display:flex;justify-content:space-between;font-size:14px;gap:12px}
+  .sumrow span:first-child{color:var(--muted)}
+  .sumrow.total{border-top:1px dashed var(--line-strong);padding-top:13px;margin-top:2px;font-family:"Fraunces",serif;font-weight:600;font-size:18px}
+  .sumrow.total span:first-child{color:var(--ink)}
+  .steps{display:flex;gap:7px;font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  .steps b{color:var(--brass-deep)}
+  .mini{display:flex;gap:12px;align-items:center;padding:14px;background:var(--surface-2);border-radius:var(--radius-sm)}
+  .mini .thumb{width:58px;height:44px;border-radius:7px;overflow:hidden;flex:none}
+  .mini .thumb svg{width:100%;height:100%;display:block}
+  .pay-brand{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .pay-brand .dot{width:9px;height:9px;border-radius:50%;background:#3395FF}
+  .payamt{font-family:"Fraunces",serif;font-weight:600;font-size:32px;text-align:center}
+  .paymethods{display:flex;flex-direction:column;gap:8px}
+  .paym{border:1px solid var(--line-strong);border-radius:10px;padding:13px 15px;font-size:14px;display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+  .paym input{accent-color:var(--brass)}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--brass);border-radius:50%;animation:spin .7s linear infinite;margin:10px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spinner{animation:none}.room:hover{transform:none}}
+  .check{width:58px;height:58px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;font-size:30px;margin:4px auto}
+  .confcode{font-family:"Fraunces",serif;font-weight:600;font-size:24px;letter-spacing:.04em;text-align:center}
+
+  /* ---------- admin ---------- */
+  .adminhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .tabs{display:inline-flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap}
+  .tabs button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:14px;padding:10px 4px;margin-right:22px;border-bottom:2px solid transparent;position:relative;top:1px}
+  .tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:13px;margin-bottom:24px}
+  .stat{padding:16px 17px}
+  .stat .k{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .stat .v{font-family:"Fraunces",serif;font-weight:600;font-size:27px;margin-top:4px}
+  .stat .v small{font-size:13px;font-weight:500;color:var(--faint);font-family:"Figtree",sans-serif}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700;padding:13px 15px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:13px 15px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  td .rowact{display:flex;gap:8px}
+  .linkbtn{border:0;background:transparent;color:var(--brass-deep);font-weight:600;font-size:13px;padding:4px 2px}
+  .linkbtn.danger{color:var(--busy)}
+  .empty{padding:44px;text-align:center;color:var(--faint);font-size:14px}
+  .mono{font-variant-numeric:tabular-nums;font-size:13px}
+
+  /* ---------- channels (OTA) ---------- */
+  .chanexplain{background:var(--brass-soft);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:14px 16px;font-size:13.5px;color:var(--ink);margin-bottom:20px;display:flex;gap:10px}
+  .chanexplain b{font-family:"Fraunces",serif;font-weight:600}
+  .hub{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
+    padding:20px;margin-bottom:22px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius)}
+  .hubbox{background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:10px 14px;
+    font-size:13px;font-weight:600;text-align:center;box-shadow:var(--shadow)}
+  .hubbox small{display:block;font-weight:500;color:var(--faint);font-size:11px}
+  .hubbox.cm{border-color:var(--brass);color:var(--brass-deep)}
+  .hubarrow{color:var(--faint);font-size:18px}
+  .hubfan{display:flex;flex-direction:column;gap:7px}
+  .synced{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ok);font-weight:600;margin-bottom:16px}
+  .synced .ping{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 60%,transparent);animation:ping 1.8s ease-out infinite}
+  @keyframes ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 55%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  @media (prefers-reduced-motion:reduce){.synced .ping{animation:none}}
+  .changrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:13px;margin-bottom:22px}
+  .chancard{padding:16px;border-top:3px solid var(--c)}
+  .chanhead{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+  .chanhead .chandot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+  .chanhead .tag{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);background:var(--teal-ink);padding:2px 7px;border-radius:999px}
+  .chanavail{font-family:"Fraunces",serif;font-size:15px;margin-top:10px;color:var(--muted)}
+  .chanavail .num{font-size:28px;font-weight:600;color:var(--ink)}
+  .chancomm{font-size:12px;color:var(--faint);margin-top:4px}
+  .simbar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:16px;margin-bottom:8px}
+  .simbar .field{min-width:150px}
+  .chan{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;color:var(--c);
+    background:color-mix(in srgb,var(--c) 15%,transparent);border:1px solid color-mix(in srgb,var(--c) 32%,transparent)}
+
+  .footnote{text-align:center;color:var(--faint);font-size:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+
+  @media (max-width:560px){
+    .searchcard{flex-direction:column;align-items:stretch}
+    .searchcard .nights{padding-bottom:0}
+    .brand span{display:none}
+    .hero-inner{padding-block:34px 110px}
+  }
+</style>
+<style>
+  :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  *{}
+  html,body{margin:0}
+  body{font:14px/1.5 system-ui,sans-serif}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <svg class="crest" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <circle cx="20" cy="20" r="19" fill="var(--teal)"/>
+      <path d="M20 9c-4 3-6 7-6 11 0 4 2.6 7 6 9 3.4-2 6-5 6-9 0-4-2-8-6-11Z" fill="var(--brass)"/>
+      <circle cx="20" cy="16" r="2.2" fill="var(--teal)"/>
+    </svg>
+    <div>
+      <b>The Peacock</b><br><span>Jaipur</span>
+    </div>
+  </div>
+  <div class="roleswitch" role="group" aria-label="View as">
+    <button id="role-guest" aria-pressed="true" onclick="setRole('guest')">Guest</button>
+    <button id="role-admin" aria-pressed="false" onclick="setRole('admin')">Front desk</button>
+  </div>
+  <button class="iconbtn" id="themebtn" title="Toggle theme" onclick="toggleTheme()">◐</button>
+</div>
+
+<!-- ============ GUEST ============ -->
+<section id="view-guest">
+  <div class="hero">
+    <svg class="arches" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><g id="arch"><path d="M0 120 V60 Q0 0 40 0 Q80 0 80 60 V120" fill="none" stroke="#fff" stroke-width="2"/></g></defs>
+      <use href="#arch" x="40" y="60"/><use href="#arch" x="180" y="60"/><use href="#arch" x="320" y="60"/>
+      <use href="#arch" x="460" y="60"/><use href="#arch" x="600" y="60"/><use href="#arch" x="740" y="60"/>
+      <use href="#arch" x="880" y="60"/><use href="#arch" x="1020" y="60"/>
+      <use href="#arch" x="110" y="180"/><use href="#arch" x="250" y="180"/><use href="#arch" x="390" y="180"/>
+      <use href="#arch" x="530" y="180"/><use href="#arch" x="670" y="180"/><use href="#arch" x="810" y="180"/>
+      <use href="#arch" x="950" y="180"/>
+    </svg>
+    <div class="hero-inner">
+      <div class="stars">★★★★★</div>
+      <h1>A heritage stay<br>in the Pink City</h1>
+      <div class="loc">◌ Civil Lines, Jaipur · 12 rooms · courtyard &amp; rooftop dining</div>
+      <p class="tagline">Carved jharokhas, slow mornings, and a pool that catches the evening light.</p>
+      <div class="trust">
+        <span><b>4.8</b> · 326 reviews</span>
+        <span>Check-in <b>2 PM</b> · Check-out <b>11 AM</b></span>
+        <span><b>Free</b> cancellation</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="searchwrap">
+    <div class="searchcard">
+      <div class="field"><label for="ci">Check-in</label><input type="date" id="ci" onchange="onDates()"></div>
+      <div class="field"><label for="co">Check-out</label><input type="date" id="co" onchange="onDates()"></div>
+      <div class="field"><label for="guests">Guests</label>
+        <select id="guests"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+      </div>
+      <div class="nights" id="nights">—</div>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding-top:34px">
+    <div class="eyebrow">Choose your room</div>
+    <h2 class="section-h">Rooms &amp; suites</h2>
+    <p class="lede">Availability updates for the dates you picked above.</p>
+    <div class="roomgrid" id="roomgrid"></div>
+    <div class="footnote">The Peacock · Civil Lines, Jaipur · +91 141 000 0000 — <em>demo property, test payments only</em></div>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section id="view-admin" hidden>
+  <div class="wrap">
+    <div class="adminhead">
+      <div><div class="eyebrow">Front desk</div><h2 class="section-h">Today at a glance</h2></div>
+      <button class="btn ghost sm" onclick="resetDemo()">Reset demo data</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs" role="group">
+      <button id="tab-bookings" aria-pressed="true" onclick="setTab('bookings')">Bookings</button>
+      <button id="tab-rooms" aria-pressed="false" onclick="setTab('rooms')">Rooms</button>
+      <button id="tab-channels" aria-pressed="false" onclick="setTab('channels')">Channels</button>
+    </div>
+    <div id="panel-bookings">
+      <div class="tablewrap">
+        <table><thead><tr><th>Ref</th><th>Guest</th><th>Room</th><th>Source</th><th>Check-in</th><th>Check-out</th><th>Amount</th><th>Payment</th><th></th></tr></thead>
+        <tbody id="bookings-body"></tbody></table>
+      </div>
+    </div>
+    <div id="panel-rooms" hidden>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn brass sm" onclick="openRoomEditor()">+ Add room</button></div>
+      <div class="tablewrap">
+        <table><thead><tr><th>Room</th><th>Type</th><th>Capacity</th><th>Price / night</th><th>Status</th><th></th></tr></thead>
+        <tbody id="rooms-body"></tbody></table>
+      </div>
+    </div>
+    <div id="panel-channels" hidden>
+      <div class="chanexplain"><span>↪</span><div><b>One shared pool.</b> The hotel's rooms are listed on several travel sites at once. A booking on <em>any</em> channel updates the count on <em>all</em> of them, so the same room can never sell twice. Try it below.</div></div>
+      <div class="hub">
+        <div class="hubbox">The Peacock<small>12 rooms</small></div>
+        <div class="hubarrow">⇄</div>
+        <div class="hubbox cm">Channel Manager<small>keeps all in sync</small></div>
+        <div class="hubarrow">⇄</div>
+        <div class="hubfan">
+          <div class="hubbox">MakeMyTrip</div><div class="hubbox">Booking.com</div><div class="hubbox">Goibibo</div>
+        </div>
+      </div>
+      <div class="synced"><span class="ping"></span> All channels synced · live inventory</div>
+      <div class="changrid" id="changrid"></div>
+      <div class="card simbar">
+        <div class="field"><label for="chan-date">Availability on</label><input type="date" id="chan-date" onchange="onChanDate(this.value)"></div>
+        <div class="field"><label for="chan-src">Incoming booking from</label>
+          <select id="chan-src"><option>MakeMyTrip</option><option>Booking.com</option><option>Goibibo</option><option>Direct</option></select></div>
+        <button class="btn brass" onclick="simulateOTA()">Simulate booking</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="modal-root"></div>
+
+<script>
+"use strict";
+
+/* ---------------- storage ---------------- */
+const KEY = "peacock_v3";
+const todayISO = () => new Date().toISOString().slice(0,10);
+const addDays = (iso,n)=>{const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+
+function seed(){
+  return {
+    rooms:[
+      {id:"r1",num:"101",type:"Courtyard Deluxe",tier:"deluxe",capacity:2,price:3200,status:"ready"},
+      {id:"r2",num:"102",type:"Courtyard Deluxe",tier:"deluxe",capacity:2,price:3200,status:"ready"},
+      {id:"r3",num:"201",type:"Jharokha King",tier:"king",capacity:2,price:4800,status:"ready"},
+      {id:"r4",num:"202",type:"Jharokha King",tier:"king",capacity:3,price:4800,status:"cleaning"},
+      {id:"r5",num:"301",type:"Maharaja Suite",tier:"suite",capacity:4,price:9500,status:"ready"},
+      {id:"r6",num:"302",type:"Maharaja Suite",tier:"suite",capacity:4,price:9500,status:"ready"},
+    ],
+    bookings:[
+      {id:"BK-4821",roomId:"r3",guest:"Aarav Mehta",phone:"98290 11223",
+       checkIn:addDays(todayISO(),1),checkOut:addDays(todayISO(),4),amount:14400,pay:"paid",source:"MakeMyTrip",created:Date.now()-86400000},
+    ]
+  };
+}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}const s=seed();save(s);return s;}
+function save(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
+let DB = load();
+
+/* ---------------- helpers ---------------- */
+const inr = n => "₹"+Number(n).toLocaleString("en-IN");
+const fmtDate = iso => new Date(iso+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+const nights = (ci,co)=>Math.max(0,Math.round((new Date(co)-new Date(ci))/86400000));
+const roomById = id => DB.rooms.find(r=>r.id===id);
+
+// core rule: room busy if any active booking overlaps [ci,co)
+function isBooked(roomId,ci,co){
+  return DB.bookings.some(b => b.roomId===roomId && b.pay!=="cancelled" && b.checkIn < co && b.checkOut > ci);
+}
+
+/* ---- room "photo" as line-art SVG, tinted per tier ---- */
+function roomScene(tier){
+  const grad = {
+    deluxe:["#13605A","#0E4A43"],
+    king:["#1C6C63","#124F49"],
+    suite:["#2A5E57","#15433E"]
+  }[tier] || ["#13605A","#0E4A43"];
+  // bed width / extras vary subtly by tier
+  const suite = tier==="suite", king = tier==="king";
+  return `<svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="g_${tier}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${grad[0]}"/><stop offset="1" stop-color="${grad[1]}"/></linearGradient></defs>
+    <rect width="300" height="200" fill="url(#g_${tier})"/>
+    <g stroke="#C9A86A" stroke-width="1.5" fill="none" opacity=".9" stroke-linejoin="round" stroke-linecap="round">
+      <!-- window with jharokha arch -->
+      <path d="M38 40 h58 v70 h-58 Z M38 56 q29 -28 58 0"/>
+      <line x1="67" y1="40" x2="67" y2="110"/>
+      <!-- curtains -->
+      <path d="M30 36 q6 40 2 80" /><path d="M104 36 q-6 40 -2 80"/>
+      <!-- pendant lamp -->
+      <line x1="150" y1="22" x2="150" y2="42"/><path d="M140 54 q10 -16 20 0 Z"/>
+      <!-- bed -->
+      <path d="M118 150 v-28 q0 -8 8 -8 h${suite?148:king?128:118} q8 0 8 8 v28" fill="${grad[1]}"/>
+      <rect x="118" y="150" width="${suite?164:king?144:134}" height="26" rx="3" fill="${grad[1]}"/>
+      <!-- pillows -->
+      <rect x="128" y="120" width="34" height="18" rx="4"/><rect x="166" y="120" width="34" height="18" rx="4"/>
+      ${suite?'<rect x="204" y="120" width="34" height="18" rx="4"/>':''}
+      <!-- side table + plant for suite -->
+      ${suite?'<line x1="262" y1="150" x2="262" y2="176"/><path d="M256 150 q6 -14 12 0" />':''}
+    </g>
+  </svg>`;
+}
+const amenityIcons = {
+  bed:'<svg viewBox="0 0 24 24"><path d="M3 18V9a2 2 0 012-2h14a2 2 0 012 2v9M3 14h18M7 10h4"/></svg>',
+  guest:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>',
+  wifi:'<svg viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0114 0M8 15.5a6 6 0 018 0"/><circle cx="12" cy="19" r="1" fill="var(--brass-deep)" stroke="none"/></svg>',
+  ac:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="7" rx="2"/><path d="M7 16v2M12 16v3M17 16v2"/></svg>'
+};
+
+/* ---------------- role / theme / tabs ---------------- */
+function setRole(role){
+  document.getElementById("view-guest").hidden = role!=="guest";
+  document.getElementById("view-admin").hidden = role!=="admin";
+  document.getElementById("role-guest").setAttribute("aria-pressed",role==="guest");
+  document.getElementById("role-admin").setAttribute("aria-pressed",role==="admin");
+  if(role==="admin") renderAdmin();
+  window.scrollTo(0,0);
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute("data-theme");
+  const isDark=cur?cur==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  document.documentElement.setAttribute("data-theme",isDark?"light":"dark");
+}
+function setTab(t){
+  for(const p of ["bookings","rooms","channels"]){
+    document.getElementById("panel-"+p).hidden=t!==p;
+    document.getElementById("tab-"+p).setAttribute("aria-pressed",t===p);
+  }
+  if(t==="channels") renderChannels();
+}
+
+/* ---- OTA channels ---- */
+const CHANNELS={
+  "Direct":{commission:0,color:"#0E4A43"},
+  "MakeMyTrip":{commission:0.18,color:"#E0282E"},
+  "Booking.com":{commission:0.15,color:"#1A4FA0"},
+  "Goibibo":{commission:0.16,color:"#F26C21"}
+};
+function chanBadge(src){const c=CHANNELS[src]||CHANNELS.Direct;return `<span class="chan" style="--c:${c.color}">${src||"Direct"}</span>`;}
+let chanDate=todayISO();
+function onChanDate(v){chanDate=v;renderChannels();}
+function renderChannels(){
+  const grid=document.getElementById("changrid"); if(!grid) return;
+  const di=document.getElementById("chan-date"); if(di&&!di.value){di.min=todayISO();di.value=chanDate;}
+  const ci=chanDate,co=addDays(chanDate,1);
+  const avail=DB.rooms.filter(r=>r.status==="ready"&&!isBooked(r.id,ci,co)).length;
+  const total=DB.rooms.length;
+  grid.innerHTML=Object.entries(CHANNELS).map(([name,c])=>`
+    <div class="chancard card" style="--c:${c.color}">
+      <div class="chanhead"><span class="chandot"></span>${name}${name==="Direct"?'<span class="tag">your app</span>':""}</div>
+      <div class="chanavail"><span class="num tnum">${avail}</span> of ${total} free</div>
+      <div class="chancomm">${c.commission?("Commission "+(c.commission*100)+"% per booking"):"No commission — full payout"}</div>
+    </div>`).join("");
+}
+function simulateOTA(){
+  const src=document.getElementById("chan-src").value;
+  const ci=chanDate,co=addDays(chanDate,1);
+  const room=DB.rooms.find(r=>r.status==="ready"&&!isBooked(r.id,ci,co));
+  if(!room){alert("Sold out on "+fmtDate(ci)+" — every channel already shows 0 free. That's the overbooking guard: no channel can sell what the pool doesn't have.");return;}
+  const names=["Rohan Gupta","Sara Khan","Vikram Rao","Neha Jain","Imran Ali","Pooja Nair"];
+  const ref="BK-"+Math.floor(1000+Math.random()*9000);
+  DB.bookings.push({id:ref,roomId:room.id,guest:names[Math.floor(Math.random()*names.length)],phone:"—",
+    checkIn:ci,checkOut:co,amount:room.price,pay:"paid",source:src,created:Date.now()});
+  save(DB); renderAdmin(); renderRooms();
+  alert(src+" just booked Room "+room.num+" for "+fmtDate(ci)+". Notice every channel's count dropped together — that's the sync.");
+}
+
+/* ---------------- guest: dates + rooms ---------------- */
+function initDates(){
+  const ci=document.getElementById("ci"),co=document.getElementById("co");
+  ci.min=todayISO();co.min=addDays(todayISO(),1);
+  ci.value=addDays(todayISO(),2);co.value=addDays(todayISO(),4);
+  onDates();
+}
+function onDates(){
+  const ci=document.getElementById("ci").value,co=document.getElementById("co").value;
+  const nb=document.getElementById("nights");
+  if(co<=ci){document.getElementById("co").value=addDays(ci,1);}
+  const ci2=document.getElementById("ci").value,co2=document.getElementById("co").value;
+  nb.innerHTML = (ci2&&co2&&co2>ci2)?`<b>${nights(ci2,co2)}</b> night${nights(ci2,co2)>1?"s":""}`:"Select dates";
+  renderRooms();
+}
+function renderRooms(){
+  const ci=document.getElementById("ci").value,co=document.getElementById("co").value;
+  const grid=document.getElementById("roomgrid");
+  const valid=ci&&co&&co>ci,n=valid?nights(ci,co):0;
+  grid.innerHTML=DB.rooms.map(r=>{
+    const offline=r.status!=="ready";
+    const busy=valid&&isBooked(r.id,ci,co);
+    const avail=valid&&!busy&&!offline;
+    let badge,action,forn;
+    if(!valid){badge=`<span class="pill neutral">Pick dates</span>`;action=`<button class="btn sm" disabled>Reserve</button>`;forn="&nbsp;";}
+    else if(offline){badge=`<span class="pill neutral">Not bookable</span>`;action=`<button class="btn sm" disabled>Reserve</button>`;forn="Under housekeeping";}
+    else if(busy){badge=`<span class="pill busy">Booked these dates</span>`;action=`<button class="btn sm" disabled>Reserve</button>`;forn="Try other dates";}
+    else{badge=`<span class="pill ok">Available</span>`;action=`<button class="btn sm" onclick="startBooking('${r.id}')">Reserve</button>`;forn=`${inr(r.price*n)} · ${n} night${n>1?"s":""}`;}
+    return `<article class="room card">
+      <div class="scene">${roomScene(r.tier)}
+        <div class="overlay-top"><span class="roomnum">Room ${r.num}</span>${badge}</div>
+      </div>
+      <div class="body">
+        <div class="rtype">${r.type}</div>
+        <div class="amen">
+          <span>${amenityIcons.guest} Up to ${r.capacity}</span>
+          <span>${amenityIcons.bed} ${r.tier==="suite"?"King + sofa":"Queen"}</span>
+          <span>${amenityIcons.ac} AC</span>
+          <span>${amenityIcons.wifi} Wi-Fi</span>
+        </div>
+        <div class="priceline"><span class="price">${inr(r.price)}</span><small>/ night incl. taxes</small></div>
+        <div class="foot"><span class="forn">${forn}</span>${action}</div>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+/* ---------------- booking flow ---------------- */
+let flow={};
+const modalRoot=()=>document.getElementById("modal-root");
+function closeModal(){modalRoot().innerHTML="";}
+
+function startBooking(roomId){
+  const ci=document.getElementById("ci").value,co=document.getElementById("co").value;
+  const r=roomById(roomId),n=nights(ci,co);
+  flow={roomId,ci,co,n,amount:r.price*n};
+  stepDetails();
+}
+function miniCard(r){return `<div class="mini"><div class="thumb">${roomScene(r.tier)}</div>
+  <div><div class="serif" style="font-weight:600;font-size:15px">${r.type}</div>
+  <div style="font-size:12.5px;color:var(--muted);margin-top:2px">Room ${r.num} · ${fmtDate(flow.ci)} → ${fmtDate(flow.co)} · ${flow.n}n</div></div></div>`;}
+function stepDetails(){
+  const r=roomById(flow.roomId);
+  modalRoot().innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">
+    <div class="sheet-head"><h3>Guest details</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+    <div class="sheet-body">
+      <div class="steps"><b>1 Details</b> › 2 Payment › 3 Confirmed</div>
+      ${miniCard(r)}
+      <div class="field"><label>Full name</label><input id="g-name" placeholder="e.g. Priya Sharma"></div>
+      <div class="field"><label>Phone</label><input id="g-phone" placeholder="10-digit mobile" inputmode="numeric"></div>
+      <div class="field"><label>Email (optional)</label><input id="g-email" placeholder="you@email.com"></div>
+      <button class="btn" onclick="toPayment()">Continue to payment →</button>
+    </div></div></div>`;
+  setTimeout(()=>document.getElementById("g-name").focus(),50);
+}
+function toPayment(){
+  const name=document.getElementById("g-name").value.trim();
+  const phone=document.getElementById("g-phone").value.trim();
+  if(!name){alert("Please enter guest name");return;}
+  if(phone.length<10){alert("Please enter a valid phone number");return;}
+  flow.name=name;flow.phone=phone;flow.email=document.getElementById("g-email").value.trim();
+  stepPayment();
+}
+function stepPayment(){
+  const r=roomById(flow.roomId);
+  modalRoot().innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">
+    <div class="sheet-head"><div class="pay-brand"><span class="dot"></span> Secure checkout · test mode</div><button class="iconbtn" onclick="closeModal()">✕</button></div>
+    <div class="sheet-body">
+      <div class="steps">1 Details › <b>2 Payment</b> › 3 Confirmed</div>
+      <div class="payamt">${inr(flow.amount)}</div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:-8px">The Peacock, Jaipur · Room ${r.num}</div>
+      <div class="paymethods">
+        <label class="paym"><input type="radio" name="pm" checked> UPI — GPay / PhonePe / Paytm</label>
+        <label class="paym"><input type="radio" name="pm"> Credit / Debit card</label>
+        <label class="paym"><input type="radio" name="pm"> Netbanking</label>
+      </div>
+      <div style="font-size:11.5px;color:var(--faint);text-align:center">No real money is charged — this simulates a Razorpay checkout.</div>
+      <button class="btn brass" id="paybtn" onclick="payNow()">Pay ${inr(flow.amount)}</button>
+    </div></div></div>`;
+}
+function payNow(){
+  const btn=document.getElementById("paybtn");
+  btn.disabled=true;btn.textContent="Verifying payment…";
+  btn.insertAdjacentHTML("afterend",'<div class="spinner"></div>');
+  setTimeout(()=>{
+    if(isBooked(flow.roomId,flow.ci,flow.co)){closeModal();alert("Sorry — that room was just taken for these dates.");renderRooms();return;}
+    const ref="BK-"+Math.floor(1000+Math.random()*9000);
+    DB.bookings.push({id:ref,roomId:flow.roomId,guest:flow.name,phone:flow.phone,email:flow.email,
+      checkIn:flow.ci,checkOut:flow.co,amount:flow.amount,pay:"paid",source:"Direct",created:Date.now()});
+    save(DB);flow.ref=ref;stepDone();renderRooms();
+  },1400);
+}
+function stepDone(){
+  const r=roomById(flow.roomId);
+  modalRoot().innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">
+    <div class="sheet-head"><h3>You're booked</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+    <div class="sheet-body">
+      <div class="check">✓</div>
+      <div class="confcode">${flow.ref}</div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:-8px">Confirmation sent to the guest</div>
+      <div style="padding:16px;background:var(--surface-2);border-radius:var(--radius-sm);display:flex;flex-direction:column;gap:9px">
+        <div class="sumrow"><span>Guest</span><b>${flow.name}</b></div>
+        <div class="sumrow"><span>Room</span><span>${r.type} · ${r.num}</span></div>
+        <div class="sumrow"><span>Stay</span><span>${fmtDate(flow.ci)} → ${fmtDate(flow.co)} (${flow.n}n)</span></div>
+        <div class="sumrow"><span>Payment</span><span class="pill ok" style="padding:2px 9px">Paid</span></div>
+        <div class="sumrow total"><span>Total</span><span>${inr(flow.amount)}</span></div>
+      </div>
+      <button class="btn ghost" onclick="closeModal()">Done</button>
+    </div></div></div>`;
+}
+
+/* ---------------- admin ---------------- */
+function renderAdmin(){renderStats();renderBookings();renderRoomsTable();renderChannels();}
+function renderStats(){
+  const paid=DB.bookings.filter(b=>b.pay==="paid");
+  const revenue=paid.reduce((s,b)=>s+b.amount,0);
+  const ci=todayISO(),co=addDays(todayISO(),1);
+  const freeTonight=DB.rooms.filter(r=>r.status==="ready"&&!isBooked(r.id,ci,co)).length;
+  document.getElementById("stats").innerHTML=`
+    <div class="stat card"><div class="k">Total bookings</div><div class="v tnum">${paid.length}</div></div>
+    <div class="stat card"><div class="k">Revenue (paid)</div><div class="v tnum">${inr(revenue)}</div></div>
+    <div class="stat card"><div class="k">Rooms</div><div class="v tnum">${DB.rooms.length}</div></div>
+    <div class="stat card"><div class="k">Free tonight</div><div class="v tnum">${freeTonight}<small> / ${DB.rooms.length}</small></div></div>`;
+}
+function renderBookings(){
+  const body=document.getElementById("bookings-body");
+  const rows=[...DB.bookings].sort((a,b)=>b.created-a.created);
+  if(!rows.length){body.innerHTML=`<tr><td colspan="9"><div class="empty">No bookings yet. Make one from the Guest view.</div></td></tr>`;return;}
+  body.innerHTML=rows.map(b=>{
+    const r=roomById(b.roomId),cancelled=b.pay==="cancelled";
+    return `<tr style="${cancelled?'opacity:.5':''}">
+      <td class="mono">${b.id}</td>
+      <td><b>${b.guest}</b><br><span style="color:var(--faint);font-size:12px">${b.phone||""}</span></td>
+      <td>${r?r.type+" · "+r.num:"—"}</td>
+      <td>${chanBadge(b.source)}</td>
+      <td class="mono">${fmtDate(b.checkIn)}</td><td class="mono">${fmtDate(b.checkOut)}</td>
+      <td class="mono">${inr(b.amount)}</td>
+      <td>${cancelled?'<span class="pill neutral">Cancelled</span>':'<span class="pill ok">Paid</span>'}</td>
+      <td class="rowact">${cancelled?"":`<button class="linkbtn danger" onclick="cancelBooking('${b.id}')">Cancel</button>`}</td>
+    </tr>`;
+  }).join("");
+}
+function cancelBooking(id){const b=DB.bookings.find(x=>x.id===id);if(!b)return;b.pay="cancelled";save(DB);renderAdmin();renderRooms();}
+function renderRoomsTable(){
+  document.getElementById("rooms-body").innerHTML=DB.rooms.map(r=>`<tr>
+    <td><b>Room ${r.num}</b></td><td>${r.type}</td><td class="mono">${r.capacity}</td><td class="mono">${inr(r.price)}</td>
+    <td>${r.status==="ready"?'<span class="pill ok">Ready</span>':'<span class="pill neutral">'+r.status+'</span>'}</td>
+    <td class="rowact"><button class="linkbtn" onclick="openRoomEditor('${r.id}')">Edit</button>
+      <button class="linkbtn danger" onclick="deleteRoom('${r.id}')">Delete</button></td></tr>`).join("");
+}
+function deleteRoom(id){
+  if(DB.bookings.some(b=>b.roomId===id&&b.pay!=="cancelled")){alert("This room has active bookings. Cancel them first.");return;}
+  DB.rooms=DB.rooms.filter(r=>r.id!==id);save(DB);renderAdmin();
+}
+function openRoomEditor(id){
+  const r=id?roomById(id):{num:"",type:"",tier:"deluxe",capacity:2,price:3000,status:"ready"};
+  const editing=!!id;
+  modalRoot().innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet">
+    <div class="sheet-head"><h3>${editing?"Edit room":"Add room"}</h3><button class="iconbtn" onclick="closeModal()">✕</button></div>
+    <div class="sheet-body">
+      <div class="field"><label>Room number</label><input id="rm-num" value="${r.num}" placeholder="e.g. 303"></div>
+      <div class="field"><label>Type</label><input id="rm-type" value="${r.type}" placeholder="e.g. Courtyard Deluxe"></div>
+      <div class="field"><label>Category</label><select id="rm-tier">
+        <option value="deluxe" ${r.tier==="deluxe"?"selected":""}>Deluxe</option>
+        <option value="king" ${r.tier==="king"?"selected":""}>King</option>
+        <option value="suite" ${r.tier==="suite"?"selected":""}>Suite</option></select></div>
+      <div class="field"><label>Capacity</label><input id="rm-cap" type="number" min="1" value="${r.capacity}"></div>
+      <div class="field"><label>Price per night (₹)</label><input id="rm-price" type="number" min="0" value="${r.price}"></div>
+      <div class="field"><label>Status</label><select id="rm-status">
+        <option value="ready" ${r.status==="ready"?"selected":""}>Ready</option>
+        <option value="cleaning" ${r.status==="cleaning"?"selected":""}>Cleaning</option>
+        <option value="maintenance" ${r.status==="maintenance"?"selected":""}>Maintenance</option></select></div>
+      <button class="btn" onclick="saveRoom(${editing?`'${id}'`:"null"})">${editing?"Save changes":"Add room"}</button>
+    </div></div></div>`;
+}
+function saveRoom(id){
+  const data={num:document.getElementById("rm-num").value.trim(),type:document.getElementById("rm-type").value.trim(),
+    tier:document.getElementById("rm-tier").value,capacity:+document.getElementById("rm-cap").value||1,
+    price:+document.getElementById("rm-price").value||0,status:document.getElementById("rm-status").value};
+  if(!data.num||!data.type){alert("Room number and type are required");return;}
+  if(id){Object.assign(roomById(id),data);}else{DB.rooms.push({id:"r"+Date.now(),...data});}
+  save(DB);closeModal();renderAdmin();renderRooms();
+}
+function resetDemo(){DB=seed();save(DB);renderAdmin();renderRooms();}
+
+/* ---------------- boot ---------------- */
+initDates();
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+</script>
+</body>
+</html>
