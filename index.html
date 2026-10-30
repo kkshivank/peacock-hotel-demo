@@ -59,8 +59,8 @@
   .serif{font-family:"Fraunces",Georgia,serif}
 
   /* ---------- top bar ---------- */
-  .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 88%,transparent);
-    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-block:11px;
+  .topbar{position:sticky;top:0;z-index:30;background:var(--surface);
+    border-bottom:1px solid var(--line);padding-block:calc(11px + env(safe-area-inset-top,0px)) 11px;
     padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));
     display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:31}
@@ -271,8 +271,8 @@
   }
 </style>
 <style>
-  :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-  html,body{margin:0}
+  :root{padding-bottom:env(safe-area-inset-bottom,0px)}
+  html,body{margin:0;overscroll-behavior-y:none}
   body{font:14px/1.5 system-ui,sans-serif}
   img{max-width:100%}
   [hidden]{display:none!important}
